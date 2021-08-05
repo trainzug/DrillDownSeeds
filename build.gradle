@@ -1,0 +1,18 @@
+plugins {
+    id 'java'
+}
+
+group 'de.trainzug.seeds'
+version '1'
+
+repositories {
+    mavenCentral()
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'de.trainzug.seeds.Gui'
+        )
+    }
+}
