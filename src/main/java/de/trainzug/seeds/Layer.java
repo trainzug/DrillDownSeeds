@@ -121,47 +121,55 @@ public final class Layer {
         return s.toString();
     }
 
+    public int checkPattern(TileType[][] pattern) {
+        int count = 0;
+        for (int i = 0; i < data.length; i++) {
+            for (int j = 0; j < data[0].length; j++) {
+                if (data[i][j] == pattern[0][0]) {
+                    boolean flag = true;
+
+                    for (int k = 0; k < pattern.length; k++) {
+                        for (int l = 0; l < pattern[k].length; l++) {
+                            if ((i + k) >= data.length || (j + l) >= data[0].length) {
+                                flag = false;
+                                break;
+                            }
+                            if (data[i + k][j + l] != pattern[k][l]) {
+                                flag = false;
+                            }
+                        }
+                    }
+                    if (flag) {
+                        count++;
+                    }
+                }
+            }
+        }
+        return count;
+    }
+
     public void check2by2s() {
         for (TileType t : TileType.values()) {
             if (t == TileType.Stone) continue;
             TileType[][] pattern = new TileType[][]{{t, t}, {t, t}};
-
-            for (int i = 0; i < data.length; i++) {
-                for (int j = 0; j < data[0].length; j++) {
-                    if (data[i][j] == pattern[0][0]) {
-                        boolean flag = true;
-                        for (int k = 0; k < pattern.length; k++) {
-                            for (int l = 0; l < pattern[k].length; l++) {
-                                if ((i + k) >= data.length || (j + l) >= data[0].length) {
-                                    flag = false;
-                                    break;
-                                }
-                                if (data[i + k][j + l] != pattern[k][l]) {
-                                    flag = false;
-                                }
-                            }
-                        }
-
-                        if (flag) {
-                            if (t == TileType.Dirt) {
-                                this.dirt2by2s++;
-                            } else if (t == TileType.Clay) {
-                                this.clay2by2s++;
-                            } else if (t == TileType.IronOre) {
-                                this.iron2by2s++;
-                            } else if (t == TileType.CopperOre) {
-                                this.copper2by2s++;
-                            } else if (t == TileType.CoalOre) {
-                                this.coal2by2s++;
-                            } else if (t == TileType.TinOre) {
-                                this.tin2by2s++;
-                            } else if (t == TileType.CrudeOil) {
-                                this.crude2by2s++;
-                            }
-                            this.total2by2s++;
-                        }
-                    }
+            int count = checkPattern(pattern);
+            if (count > 0) {
+                if (t == TileType.Dirt) {
+                    this.dirt2by2s += count;
+                } else if (t == TileType.Clay) {
+                    this.clay2by2s += count;
+                } else if (t == TileType.IronOre) {
+                    this.iron2by2s += count;
+                } else if (t == TileType.CopperOre) {
+                    this.copper2by2s += count;
+                } else if (t == TileType.CoalOre) {
+                    this.coal2by2s += count;
+                } else if (t == TileType.TinOre) {
+                    this.tin2by2s += count;
+                } else if (t == TileType.CrudeOil) {
+                    this.crude2by2s += count;
                 }
+                this.total2by2s += count;
             }
         }
     }
