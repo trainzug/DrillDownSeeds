@@ -33,4 +33,13 @@ public enum OreType {
         this.max = max;
         this.id = id;
     }
+
+    public float getProbability(int level) {
+        float val = (this.max - this.min) * (float)Math.pow(2.7182817459106445D, -Math.pow((double)(((float)level - this.offset) / (2.0F * ((float)level < this.offset ? this.leftUphold : this.rightUphold))), 2.0D)) + this.min;
+        if (val < 1.0E-6F) {
+            val = 0.0F;
+        }
+
+        return val;
+    }
 }

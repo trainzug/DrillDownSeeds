@@ -6,7 +6,6 @@ import java.util.Random;
 
 public class Gui extends JFrame {
     Layer l;
-    Generator g;
     double tries = 0;
     private JPanel guiPanel;
     private JButton start;
@@ -96,10 +95,11 @@ public class Gui extends JFrame {
             index = 0;
             tries = 0;
             Layer l = findLayer();
+            System.out.println(l);
             index = l.index;
             run = true;
             triesLabel.setText(String.valueOf(tries));
-            currentSeed.setText(Long.toString(g.getSeed()));
+            currentSeed.setText(Long.toString(Generator.G.getSeed()));
             guiPanel.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
             displayLayer(l);
@@ -118,7 +118,8 @@ public class Gui extends JFrame {
     private static String randomString() {
         Random rand = new Random();
         StringBuilder ok = new StringBuilder();
-        for (int i = 0; i < 19; i++) {
+        final int digits = rand.nextInt(30) + 1;
+        for (int i = 0; i < digits; i++) {
             ok.append(rand.nextInt((9) + 1));
         }
         return ok.toString();
@@ -133,8 +134,8 @@ public class Gui extends JFrame {
     private void newLayer(int index) {
         new Thread(() -> {
             l = new Layer(index, 64, 64);
-            Generator ng = new Generator(g.getSeed());
-            ng.generate(l);
+            Generator.G.setSeed(Generator.G.getSeed());
+            Generator.G.generate(l);
             displayLayer(l);
             layerIndex.setText(String.valueOf(index));
         }).start();
@@ -163,8 +164,8 @@ public class Gui extends JFrame {
             for (int currentIndex = 0; currentIndex <= toIndex; currentIndex++) {
                 tries++;
                 l = new Layer(currentIndex, 64, 64);
-                g = new Generator(hash(randomString()));
-                g.generate(l);
+                Generator.G.setSeed(hash(randomString()));
+                Generator.G.generate(l);
                 if (clay2by2sCheckbox.isSelected() || dirt2by2sCheckbox.isSelected() || iron2by2sCheckbox.isSelected() || copper2by2sCheckbox.isSelected() || coal2by2sCheckbox.isSelected()
                         || tin2by2sCheckbox.isSelected() || crude2by2sCheckbox.isSelected() || total2by2sCheckbox.isSelected()) {
                     l.check2by2s();

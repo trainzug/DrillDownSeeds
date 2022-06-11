@@ -1,11 +1,11 @@
 package de.trainzug.seeds;
 
-public final class Generator {
+public class Generator {
+    public static final Generator G = new Generator();
     private final RandomXS128 rng = new RandomXS128();
     private long seed;
 
-    public Generator(long seed) {
-        this.setSeed(seed);
+    private Generator() {
     }
 
     public long getSeed() {
@@ -17,72 +17,65 @@ public final class Generator {
         this.rng.setSeed(seed);
     }
 
-    public void generate(final Layer layer) {
-        for (OreType oreType : OreType.values) {
-            float n2;
-            if (layer.index < 40) {
-                int index = layer.index;
-                float n;
-                if ((n = (oreType.max - oreType.min) * (float) Math.pow(2.7182817459106445, -Math.pow((index - oreType.offset) / (2.0f * ((index < oreType.offset) ? oreType.leftUphold : oreType.rightUphold)), 2.0)) + oreType.min) < 1.0E-6f) {
-                    n = 0.0f;
-                }
-                n2 = n;
-            } else {
-                n2 = this.rng.nextFloat() * (1.0f + this.rng.nextFloat());
-            }
-            final float n3 = n2;
-            final float n4 = oreType.minVeinRadius + (oreType.maxVeinRadius - oreType.minVeinRadius) * n3;
-            for (int j = 0; j < oreType.veins; ++j) {
-                if (n3 > this.rng.nextFloat()) {
-                    this.generateVein(layer, n4, oreType.tile);
-                }
-            }
-            if (layer.index == 0 && oreType == OreType.CopperOre) {
-                for (int k = 0; k <= 15; k += this.generateVein(layer, n4, oreType.tile)) {
-                }
-            }
+    public void generate(Layer layer) {
+        for (OreType type : OreType.values) {
+            this.generateVeins(layer, type);
         }
     }
 
-    private int generateVein(final Layer layer, float n, final TileType tileType) {
-        layer.totalVeinCount++;
-        if (tileType == TileType.Dirt) {
-            layer.dirtVeinCount++;
-        } else if (tileType == TileType.Clay) {
-            layer.clayVeinCount++;
-        } else if (tileType == TileType.IronOre) {
-            layer.ironVeinCount++;
-        } else if (tileType == TileType.CopperOre) {
-            layer.copperVeinCount++;
-        } else if (tileType == TileType.CoalOre) {
-            layer.coalVeinCount++;
-        } else if (tileType == TileType.TinOre) {
-            layer.tinVeinCount++;
-        } else if (tileType == TileType.CrudeOil) {
-            layer.crudeVeinCount++;
+    private void generateVeins(Layer layer, OreType type) {
+        float probability = layer.index < 40 ? type.getProbability(layer.index) : this.rng.nextFloat() * (1.0F + this.rng.nextFloat());
+        float radius = type.minVeinRadius + (type.maxVeinRadius - type.minVeinRadius) * probability;
+
+        int i;
+        for(i = 0; i < type.veins; ++i) {
+            float f = this.rng.nextFloat();
+            if (probability > f) {
+
+                this.generateVein(layer, radius, type.tile);
+            }
         }
-        final float n2 = this.rng.nextFloat() * layer.width;
-        final float n3 = this.rng.nextFloat() * layer.height;
-        n = n + this.rng.nextFloat() - 0.5f;
-        int n4 = 0;
-        for (int x = (int) (n2 - n - 1.0f); x < (int) (n2 + n + 1.0f); ++x) {
-            for (int y = (int) (n3 - n - 1.0f); y < (int) (n3 + n + 1.0f); ++y) {
-                final float n5;
-                if ((n5 = (float) Math.sqrt((x - n2) * (x - n2) + (y - n3) * (y - n3))) < n) {
-                    if (tileType.base != null) {
-                        if (0.2f < Math.abs((float) this.rng.nextGaussian()) / 3.0f * (n5 / n)) {
+
+        if (layer.index == 0 && type == OreType.CopperOre) {
+            for(i = 0; i <= 15; i += this.generateVein(layer, radius, type.tile));
+        }
+    }
+
+    private int generateVein(Layer layer, float rad, TileType type) {
+        float x = this.rng.nextFloat() * (float)layer.width;
+        float y = this.rng.nextFloat() * (float)layer.height;
+        float radius = rad + this.rng.nextFloat() - 0.5F;
+        int produced = 0;
+
+        for(int j = (int)(x - radius - 1.0F); j < (int)(x + radius + 1.0F); ++j) {
+            for(int k = (int)(y - radius - 1.0F); k < (int)(y + radius + 1.0F); ++k) {
+                float dist = (float)Math.sqrt(((float)j - x) * ((float)j - x) + ((float)k - y) * ((float)k - y));
+                if (dist < radius) {
+                    float dst;
+                    float gs;
+                    float rnd;
+                    if (type.base != null) {
+                        dst = dist / radius;
+                        gs = (float)Math.abs(this.rng.nextGaussian());
+                        rnd = gs / 3.0F * dst;
+                        if (0.2F < rnd) {
                             continue;
                         }
-                        layer.set(x, y, tileType.base);
+
+                        layer.set(j, k, type.base);
                     }
-                    if (0.1f >= Math.abs((float) this.rng.nextGaussian()) / 3.0f * (n5 / n)) {
-                        ++n4;
-                        layer.set(x, y, tileType);
+
+                    dst = dist / radius;
+                    gs = (float)Math.abs(this.rng.nextGaussian());
+                    rnd = gs / 3.0F * dst;
+                    if (0.1F >= rnd) {
+                        ++produced;
+                        layer.set(j, k, type);
                     }
                 }
             }
         }
-        return n4;
-    }
 
+        return produced;
+    }
 }
